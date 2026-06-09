@@ -1,38 +1,22 @@
 """
-load Spotify extended streaming data into a MySQL database
+load_spotify.py
+---------------
+Loads Spotify extended streaming history and library data into MySQL.
 
-note: found inconsistent metadata capitalisation e.g.
-spotify track uri                       track_name  artist_name  album_name
-spotify:track:0IEVKWduAaMcZepZQVr80T	Likey	    TWICE	     Twicetagram
-spotify:track:0Wf8czfSUf68GaqkgaeJY9	LIKEY	    TWICE	     twicetagram
-spotify:track:4P66rfizAl2nIJCICSMymC	Likey	    TWICE	     Twicetagram
-
-this is likely from Spotify relinking tracks over time (and not updating it when the song was added to a playlist and played from there)
-
-these should be treated the same for my purposes and so should have the same id
-
-so instead of using spotify_track_uri as the id, i decide to make an id that groups tracks as the same if the only difference is capitalisation in track/album name
-
----
-
-There are still more incompatibilites this doesn't catch - but much fewer! 
-e.g.
-history 
-    "master_metadata_track_name": "Who Knew - Edit",
-    "master_metadata_album_artist_name": "P!nk",
-    "master_metadata_album_album_name": "I'm Not Dead",
-    "spotify_track_uri": "spotify:track:2hns6Dv29Yrg68AVTJiAyA",
-
-library
-    "artist" : "P!nk",
-    "album" : "I'm Not Dead",
-    "track" : "Who Knew",
-    "uri" : "spotify:track:7FpoD2ZlcBSj05rEHSZoiB"
+Schema notes:
+- track_id: SHA1 of casefold(track)|casefold(artist)|casefold(album)
+             groups tracks that differ only in capitalisation or URI relinking
+- track_uris: maps spotify URIs to track_id (many URIs → one track_id)
+- in_library: matched by track_id, not URI, to handle relinking edge cases
 """
 
+import hashlib
 import json
 import glob
+import os
+from collections import defaultdict
 from datetime import datetime
+
 import mysql.connector
 
 # Config
@@ -40,8 +24,8 @@ import mysql.connector
 DB_CONFIG = {
     "host": "localhost",
     "user": "root",
-    "password": "pass",  # replace with your MySQL password
-    "database": "spotify_noted",
+    "password": "pass",
+    "database": "spotify_db",
 }
 
 HISTORY_JSON_GLOB = (
@@ -50,12 +34,21 @@ HISTORY_JSON_GLOB = (
 
 LIBRARY_JSON = "raw_data/spotify/Spotify Account Data/YourLibrary.json"
 
-#  Connect to MySQL database
+# Helpers
 
-conn = mysql.connector.connect(**DB_CONFIG)
-cursor = conn.cursor()
 
-#  Load JSON files
+def generate_track_id(track, artist, album):
+    raw = "|".join(
+        [
+            track.casefold().strip(),
+            artist.casefold().strip(),
+            album.casefold().strip(),
+        ]
+    )
+    return hashlib.sha1(raw.encode("utf-8")).hexdigest()
+
+
+# Load data
 
 all_events = []
 for path in glob.glob(HISTORY_JSON_GLOB):
@@ -67,135 +60,154 @@ print(f"Loaded {len(all_events)} total audio events")
 with open(LIBRARY_JSON, encoding="utf-8") as f:
     library_data = json.load(f)
 
-#  Filter to tracks only (for audio events)
+# Filter history to tracks only
+# drops podcasts, audiobooks, local files (no spotify_track_uri or track name)
 
 tracks = [
     e
     for e in all_events
     if e.get("spotify_track_uri")
     and e["spotify_track_uri"].startswith("spotify:track:")
-    and e.get(
-        "master_metadata_track_name"
-    )  # excludes events where track name is null/missing
+    and e.get("master_metadata_track_name")
 ]
 
 print(f"{len(tracks)} track events after filtering")
 
-#  Filter library to track uri's only
-
-library_uris = {track["uri"] for track in library_data["tracks"]}
-print(f"Loaded {len(library_uris)} tracks from library")
-
-
-#  Report cases of tracks with multiple Spotify URIs:
-#      when case-insensitive artist, case-insensitive track name and case-insensitive album name have multiple URIs
-#      generate a canonical track id
-
-from collections import defaultdict
-
-groups = defaultdict(list)
+# Generate track_id for every history event
 
 for e in tracks:
-    key = (
-        e["master_metadata_track_name"].casefold().strip(),  # case-insensitive
-        e["master_metadata_album_artist_name"].casefold().strip(),  # case-insensitive
-        e["master_metadata_album_album_name"].casefold().strip(),  # case-insensitive
-    )
-
-    groups[key].append(
-        (
-            e["spotify_track_uri"],
-            e["master_metadata_track_name"],
-            e["master_metadata_album_artist_name"],
-            e["master_metadata_album_album_name"],
-        )
-    )
-
-print("Tracks with multiple Spotify URIs")
-for key, values in groups.items():
-    uris = {v[0] for v in values}
-    if len(uris) > 1:
-        print(key)
-        for uri, track, artist, album in sorted(set(values)):
-            print(f"  {uri}")
-            print(f"    Track : {track}")
-            print(f"    Artist: {artist}")
-            print(f"    Album : {album}")
-        print()
-
-import hashlib
-
-
-def generate_track_id(track, artist, album):
-    raw = "|".join([track.casefold().strip(), artist.casefold().strip(), album.casefold().strip()])
-    return hashlib.sha1(raw.encode("utf-8")).hexdigest()
-
-
-for e in tracks:
-    track_id = generate_track_id(
+    e["track_id"] = generate_track_id(
         e["master_metadata_track_name"],
         e["master_metadata_album_artist_name"],
-        e["master_metadata_album_album_name"],
+        e["master_metadata_album_album_name"] or "",
     )
-    e["track_id"] = track_id
 
-# Report tracks that have incompatibilites with metadata in library vs. when played from library 
+# Generate track_id for every library track
 
-unique_lib_ids = set([e['track_id'] for e in library_data["tracks"]])
-unique_track_ids = set([t['track_id'] for t in tracks])
-in_library_but_not_history=unique_lib_ids.difference(unique_track_ids)
-temp=library_data['tracks']
-for track_id in in_library_but_not_history:
-    for t in temp:
-    	if t['track_id']==track_id:
-            print(t['track']+' '+t['artist'])
+for t in library_data["tracks"]:
+    t["track_id"] = generate_track_id(
+        t["track"],
+        t["artist"],
+        t["album"] or "",
+    )
 
+library_track_ids = {t["track_id"] for t in library_data["tracks"]}
+print(f"Loaded {len(library_track_ids)} tracks from library")
 
-#  1. tracks_metadata
+# Reports
+
+REPORT_PATH = "logs/import_report.txt"
+os.makedirs("logs", exist_ok=True)
+
+with open(REPORT_PATH, "w", encoding="utf-8") as report:
+
+    # Report: tracks with multiple Spotify URIs (capitalisation duplicates)
+
+    groups = defaultdict(set)
+    for e in tracks:
+        key = (
+            e["master_metadata_track_name"].casefold().strip(),
+            e["master_metadata_album_artist_name"].casefold().strip(),
+            (e["master_metadata_album_album_name"] or "").casefold().strip(),
+        )
+        groups[key].add(e["spotify_track_uri"])
+
+    multi_uri = {k: v for k, v in groups.items() if len(v) > 1}
+    if multi_uri:
+        report.write(f"Tracks with multiple Spotify URIs ({len(multi_uri)} cases):\n")
+        for (track, artist, album), uris in multi_uri.items():
+            report.write(f"  {track} — {artist} — {album}\n")
+            for uri in sorted(uris):
+                report.write(f"    {uri}\n")
+    else:
+        report.write("No capitalisation duplicate URIs found\n")
+
+    report.write("\n")
+
+    # Report: library tracks not matched in history
+
+    history_track_ids = {e["track_id"] for e in tracks}
+    unmatched = library_track_ids - history_track_ids
+
+    if unmatched:
+        report.write(f"Library tracks not found in history ({len(unmatched)} cases):\n")
+        for t in library_data["tracks"]:
+            if t["track_id"] in unmatched:
+                report.write(f"  {t['track']} — {t['artist']}\n")
+    else:
+        report.write("All library tracks matched in history\n")
+
+print(f"Report written to {REPORT_PATH}")
+
+# Connect to MySQL
+
+conn = mysql.connector.connect(**DB_CONFIG)
+cursor = conn.cursor()
+
+# 1. tracks_metadata
+# one row per unique track_id
+# in_library matched by track_id to handle URI relinking edge cases
 
 insert_metadata = """
     INSERT IGNORE INTO tracks_metadata
-        (track_id, spotify_track_uri, track_name, artist_name, album_name, in_library)
-    VALUES (%s, %s, %s, %s, %s, %s)
+        (track_id, track_name, artist_name, album_name, in_library)
+    VALUES (%s, %s, %s, %s, %s)
 """
 
 seen_track_ids = set()
 for e in tracks:
     track_id = e["track_id"]
-    uri = e["spotify_track_uri"]
+    in_library = track_id in library_track_ids
     if track_id not in seen_track_ids:
         cursor.execute(
             insert_metadata,
             (
                 track_id,
-                uri,
                 e["master_metadata_track_name"],
                 e["master_metadata_album_artist_name"],
                 e.get("master_metadata_album_album_name"),
-                uri in library_uris,
+                in_library,
             ),
         )
         seen_track_ids.add(track_id)
 
-print(f"Inserted {len(seen_track_ids)} unique tracks into tracks_metadata")
+print(f"\nInserted {len(seen_track_ids)} unique tracks into tracks_metadata")
 
-#  2. listening_history
+# 2. track_uris
+# maps every URI seen in history to its track_id
+# INSERT IGNORE handles the same URI appearing in multiple play events
+
+insert_uri = """
+    INSERT IGNORE INTO track_uris (spotify_track_uri, track_id)
+    VALUES (%s, %s)
+"""
+
+seen_uris = set()
+for e in tracks:
+    uri = e["spotify_track_uri"]
+    if uri not in seen_uris:
+        cursor.execute(insert_uri, (uri, e["track_id"]))
+        seen_uris.add(uri)
+
+print(f"Inserted {len(seen_uris)} URIs into track_uris")
+
+# 3. listening_history
+# one row per play event
+# ts is stream END time in UTC per Spotify documentation
 
 insert_history = """
     INSERT INTO listening_history
-        (track_id, spotify_track_uri, time_stamp, ms_played,
+        (track_id, time_stamp, ms_played,
          reason_start, reason_end, shuffle, skipped)
-    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+    VALUES (%s, %s, %s, %s, %s, %s, %s)
 """
 
 for e in tracks:
     ts = datetime.fromisoformat(e["ts"].replace("Z", "+00:00"))
-
     cursor.execute(
         insert_history,
         (
             e["track_id"],
-            e["spotify_track_uri"],
             ts,
             e["ms_played"],
             e["reason_start"],
@@ -205,7 +217,7 @@ for e in tracks:
         ),
     )
 
-#  Commit & close
+# Commit & close
 
 conn.commit()
 print("Import complete.")
