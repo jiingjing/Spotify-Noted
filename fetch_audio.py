@@ -32,7 +32,7 @@ DB_CONFIG = {
 
 AUDIO_DIR = config["AUDIO_DIR"]
 OUTPUT_TEMPLATE = os.path.join(AUDIO_DIR, "{track-id}")
-BATCH_SIZE = config["SPOTDL_BATCH_SIZE"]
+BATCH_SIZE = int(config["SPOTDL_BATCH_SIZE"])
 LOG_DIR = config["LOG_DIR"]
 
 os.makedirs(AUDIO_DIR, exist_ok=True)
