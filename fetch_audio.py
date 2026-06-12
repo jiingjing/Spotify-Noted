@@ -17,22 +17,29 @@ import os
 import subprocess
 import mysql.connector
 import yt_dlp
+from dotenv import dotenv_values
 
 # Config
 
+config = dotenv_values(".env")
+
 DB_CONFIG = {
-    "host": "localhost",
-    "user": "root",
-    "password": "your_password",  # change this to your MySQL password
-    "database": "spotify_noted",
+    "host": config["DB_HOST"],
+    "user": config["DB_USER"],
+    "password": config["DB_PASS"],
+    "database": config["DB_NAME"],
 }
 
-AUDIO_DIR = "raw_data/audio"
+AUDIO_DIR = config["AUDIO_DIR"]
 OUTPUT_TEMPLATE = os.path.join(AUDIO_DIR, "{track-id}")
-BATCH_SIZE = 10
+BATCH_SIZE = config["SPOTDL_BATCH_SIZE"]
+LOG_DIR = config["LOG_DIR"]
 
 os.makedirs(AUDIO_DIR, exist_ok=True)
-os.makedirs("logs", exist_ok=True)
+os.makedirs(LOG_DIR, exist_ok=True)
+
+YTDLP_LOG_PATH = os.path.join(LOG_DIR, "yt_dlp_errors.txt")
+SPOTDL_LOG_PATH = os.path.join(LOG_DIR, "spotdl_errors.txt")
 
 # Helpers
 
@@ -83,7 +90,7 @@ def run_spotdl(urls):
                 "--threads",
                 "4",
                 "--save-errors",
-                "logs/spotdl_errors.txt",  # saves failed URLs to a file
+                SPOTDL_LOG_PATH,  # saves failed URLs to a file
             ]
         )
 
@@ -125,6 +132,7 @@ if track_rows:
     run_spotdl(urls)
     registered, missing = rename_and_register(track_rows)
     print(f"Stage 1 done - {registered} saved, {missing} missing\n")
+    print(f"Errors written to {SPOTDL_LOG_PATH}\n")
 
 # Stage 2: spotDL retry
 
@@ -140,6 +148,7 @@ if track_rows:
     run_spotdl(urls)
     registered, missing = rename_and_register(track_rows)
     print(f"Stage 2 done - {registered} saved, {missing} missing\n")
+    print(f"Errors written to {SPOTDL_LOG_PATH}\n")
 
 # Stage 3: yt-dlp fallback
 
@@ -194,14 +203,14 @@ for i, (track_id, track_name, artist_name, _) in enumerate(track_rows, start=1):
     print(f"  {i}/{total} - {registered} saved, {missing} missing", end="\r")
 
 if yt_errors:
-    with open("logs/yt_dlp_errors.txt", "w", encoding="utf-8") as f:
+    with open(YTDLP_LOG_PATH, "w", encoding="utf-8") as f:
         for line in yt_errors:
             f.write(line + "\n")
 
 conn.commit()
 print(f"\nStage 3 done - {registered} saved, {missing} missing")
 if yt_errors:
-    print("Errors written to logs/yt_dlp_errors.txt")
+    print(f"\nErrors written to {YTDLP_LOG_PATH}")
 
 # Summary
 
