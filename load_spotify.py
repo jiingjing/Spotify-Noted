@@ -73,7 +73,7 @@ tracks = [
     and e.get("master_metadata_track_name")
 ]
 
-print(f"{len(tracks)} track events after filtering")
+print(f"{len(tracks)} music track events after filtering")
 
 # Generate track_id for every history event
 
