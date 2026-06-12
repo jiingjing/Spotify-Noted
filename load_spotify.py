@@ -18,21 +18,23 @@ from collections import defaultdict
 from datetime import datetime
 
 import mysql.connector
+from dotenv import dotenv_values
 
 # Config
 
+config = dotenv_values(".env")
+
 DB_CONFIG = {
-    "host": "localhost",
-    "user": "root",
-    "password": "pass",
-    "database": "spotify_db",
+    "host": config["DB_HOST"],
+    "user": config["DB_USER"],
+    "password": config["DB_PASS"],
+    "database": config["DB_NAME"],
 }
 
-HISTORY_JSON_GLOB = (
-    "raw_data/spotify/Spotify Extended Streaming History/Streaming_History_Audio_*.json"
-)
-
-LIBRARY_JSON = "raw_data/spotify/Spotify Account Data/YourLibrary.json"
+HISTORY_JSON_GLOB = config["HISTORY_JSON_GLOB"]
+LIBRARY_JSON = config["LIBRARY_JSON"]
+LOG_DIR = config["LOG_DIR"]
+REPORT_PATH = os.path.join(LOG_DIR, "import_report.txt")
 
 # Helpers
 
@@ -96,8 +98,7 @@ print(f"Loaded {len(library_track_ids)} tracks from library")
 
 # Reports
 
-REPORT_PATH = "logs/import_report.txt"
-os.makedirs("logs", exist_ok=True)
+os.makedirs(LOG_DIR, exist_ok=True)
 
 with open(REPORT_PATH, "w", encoding="utf-8") as report:
 
