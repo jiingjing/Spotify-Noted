@@ -1,5 +1,16 @@
+_ = """
+streamlit_app.py
+--------------
+Uses streamlit to display Spotify data
+
+Home page with
+- overview of stats
+- time spent
+- top picks
+"""
+
 import streamlit as st
-import pandas as pd
+from utils import build_df, filter_period, PERIOD_OPTIONS
 
 st.set_page_config(
     page_title="Spotify Noted",
@@ -8,59 +19,9 @@ st.set_page_config(
 )
 
 _ = """
-Data loading 
-- select data from tracks_metadata
-- select data from listening_history
-- cache the data
+Data loading + merge
 """
-conn = st.connection("mysql", type="sql")
-
-
-@st.cache_data
-def load_data():
-    tracks = conn.query(
-        "SELECT track_id, track_name, artist_name, album_name, in_library FROM tracks_metadata;",
-        ttl=0,
-    )
-    history = conn.query("SELECT * FROM listening_history;", ttl=0)
-    return tracks, history
-
-
-tracks_metadata, listening_history = load_data()
-
-_ = """
-Merge data
-- merge tracks_metadata and listening_history to one dataframe df
-- time_stamp data to datetime
-- create columns: year, hour, dow (date of week)
-"""
-df = listening_history.merge(
-    tracks_metadata[
-        ["track_id", "track_name", "artist_name", "album_name", "in_library"]
-    ],
-    on="track_id",
-    how="left",
-)
-df["time_stamp"] = pd.to_datetime(df["time_stamp"])
-df["year"] = df["time_stamp"].dt.year
-df["hour"] = df["time_stamp"].dt.hour
-df["dow"] = df["time_stamp"].dt.day_name()
-
-
-_ = """
-Period filter helper 
-- filter df for the inputted time period 
-- options: This year, Last 90d, All-time
-"""
-
-
-def filter_period(dataframe: pd.DataFrame, period: str) -> pd.DataFrame:
-    now = dataframe["time_stamp"].max()
-    if period == "This year":
-        return dataframe[dataframe["time_stamp"].dt.year == now.year]
-    if period == "Last 90d":
-        return dataframe[dataframe["time_stamp"] >= now - pd.Timedelta(days=90)]
-    return dataframe  # all time
+df = build_df()
 
 
 _ = """
@@ -131,7 +92,7 @@ st.subheader("Top picks")
 
 period = st.radio(
     label="Period",
-    options=["All time", "This year", "Last 90d"],
+    options=PERIOD_OPTIONS,
     horizontal=True,
     label_visibility="collapsed",
 )
