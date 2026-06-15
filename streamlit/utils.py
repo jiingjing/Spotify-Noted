@@ -51,6 +51,10 @@ def build_df() -> pd.DataFrame:
     df["month"] = df["time_stamp"].dt.month
     df["hour"] = df["time_stamp"].dt.hour
     df["dow"] = df["time_stamp"].dt.day_name()
+
+    df["in_library"] = df["in_library"].astype(bool)
+    df["shuffle"] = df["shuffle"].astype(bool)
+    df["skipped"] = df["skipped"].astype(bool)
     return df
 
 
