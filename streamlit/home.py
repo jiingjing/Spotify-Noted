@@ -101,22 +101,22 @@ df_period = filter_period(df, period)
 
 top_track = (
     df_period.groupby(["track_id", "track_name", "artist_name"])
-    .size()
-    .reset_index(name="plays")
+    .agg(plays=("play_id", "count"))
+    .reset_index()
     .sort_values("plays", ascending=False)
     .iloc[0]
 )
 top_artist = (
     df_period.groupby("artist_name")
-    .size()
-    .reset_index(name="plays")
+    .agg(plays=("play_id", "count"))
+    .reset_index()
     .sort_values("plays", ascending=False)
     .iloc[0]
 )
 top_album = (
     df_period.groupby(["album_name", "artist_name"])
-    .size()
-    .reset_index(name="plays")
+    .agg(plays=("play_id", "count"))
+    .reset_index()
     .sort_values("plays", ascending=False)
     .iloc[0]
 )
