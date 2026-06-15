@@ -71,7 +71,14 @@ def filter_period(df: pd.DataFrame, period: str) -> pd.DataFrame:
         return df[df["time_stamp"].dt.year == now.year]
     if period == "Last 90d":
         return df[df["time_stamp"] >= now - pd.Timedelta(days=90)]
+    if period == "This month":
+        return df[
+            (df["time_stamp"].dt.month == now.month)
+            & (df["time_stamp"].dt.year == now.year)
+        ]
+    if period == "Last 7d":
+        return df[df["time_stamp"] >= now - pd.Timedelta(days=7)]
     return df  # all time
 
 
-PERIOD_OPTIONS = ["All time", "This year", "Last 90d"]
+PERIOD_OPTIONS = ["All time", "This year", "Last 90d", "This month", "Last 7d"]
