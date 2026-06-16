@@ -83,6 +83,10 @@ def filter_period(df: pd.DataFrame, period: str) -> pd.DataFrame:
 
 PERIOD_OPTIONS = ["All time", "This year", "Last 90d", "This month", "Last 7d"]
 
+_ = """
+Footer navigation
+"""
+
 
 def footer_nav(prev=None, next=None, toc="1_toc.py"):
     st.markdown("<hr style='margin-top:3rem;'>", unsafe_allow_html=True)
@@ -102,3 +106,34 @@ def footer_nav(prev=None, next=None, toc="1_toc.py"):
         if next:
             if st.button("Next →", use_container_width=True):
                 st.switch_page(next)
+
+
+_ = """
+Time formatter helper 
+- Format datetime 
+- e.g. Wednesday 3rd May 2020 at 19:04
+"""
+
+
+def ordinal(n):
+    if 11 <= n % 100 <= 13:
+        return f"{n}th"
+    last = n % 10
+    if last == 1:
+        return f"{n}st"
+    if last == 2:
+        return f"{n}nd"
+    if last == 3:
+        return f"{n}rd"
+    return f"{n}th"
+
+
+def format_full_time(ts):
+    day_name = ts.strftime("%A")
+    day = ordinal(ts.day)
+    month = ts.strftime("%B")
+    year = ts.year
+
+    time = ts.strftime("%I:%M%p").lstrip("0").lower()
+
+    return f"{day_name} {day} {month} {year} at {time}"
