@@ -82,3 +82,23 @@ def filter_period(df: pd.DataFrame, period: str) -> pd.DataFrame:
 
 
 PERIOD_OPTIONS = ["All time", "This year", "Last 90d", "This month", "Last 7d"]
+
+
+def footer_nav(prev=None, next=None, toc="1_toc.py"):
+    st.markdown("<hr style='margin-top:3rem;'>", unsafe_allow_html=True)
+
+    col1, col2, col3 = st.columns([1, 1, 1])
+
+    with col1:
+        if prev:
+            if st.button("← Previous", use_container_width=True):
+                st.switch_page(prev)
+
+    with col2:
+        if st.button("Table of Contents", use_container_width=True):
+            st.switch_page(toc)
+
+    with col3:
+        if next:
+            if st.button("Next →", use_container_width=True):
+                st.switch_page(next)
