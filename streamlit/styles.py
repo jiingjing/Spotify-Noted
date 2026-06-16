@@ -117,8 +117,8 @@ def apply_styles(bg_uri: str):
 
 .plot-label {{
     font-family: "Baskervville", serif;
-    font-size: 0.9rem;
-    text-align: left;
+    font-size: 1rem;
+    text-align: center;
     color: #666;
     line-height: 1.6; 
 }}

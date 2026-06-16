@@ -37,7 +37,7 @@ df = build_df()
 pct_days_listened = 86  # todo: get % of days listened to music for out of total span of days in spotify history
 
 _ = """
-Page Contents
+Section 1: Page Contents
 """
 
 st.markdown(
@@ -59,7 +59,7 @@ st.markdown(
 
 
 _ = """
-Daily pattern
+Section 2: Daily pattern - All-time
 """
 st.markdown(
     f"""
@@ -194,9 +194,6 @@ def peak_metrics(bins: pd.DataFrame):
         )
 
 
-# Page
-
-# All time
 bins_all = make_bin_df(df)
 
 st.markdown(
@@ -223,6 +220,10 @@ st.plotly_chart(make_opacity_chart(bins_all), use_container_width=True)
 
 peak_metrics(bins_all)
 
+_ = """
+Section 3: Daily pattern - Year by year
+"""
+
 st.markdown(
     f"""
     <br>
@@ -233,46 +234,72 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-
-# Year by year
 years = sorted(df["year"].unique())
-fig_index = 2
+
+st.markdown(
+    f"""
+</div>
+<div class="page-caption">
+Figure 4.2: Number of plays in a year per 5-minute window across 24 hours
+</div><br>
+""",
+    unsafe_allow_html=True,
+)
 
 for year in years:
-    st.divider()
-    st.markdown(
-        f"""
-    <div class="page-subtitle">
-    {year}
-    </div>
-    <div class="page-caption">
-    Figure 4.{fig_index}: Number of plays in {year} per 5-minute window across 24 hours
-    </div><br>
-    """,
-        unsafe_allow_html=True,
-    )
     bins_year = make_bin_df(df[df["year"] == year])
     st.markdown(
         f"""
-    <br>
     <div class="plot-label">
-    Play count
-    </div><br>
-    """,
-        unsafe_allow_html=True,
-    )
-    st.plotly_chart(
-        make_frequency_chart(bins_year, height=200), use_container_width=True
-    )
-    st.markdown(
-        f"""
-    <br>
-    <div class="plot-label">
-    Relative frequency
-    </div><br>
+    {year}
+    </div><
     """,
         unsafe_allow_html=True,
     )
     st.plotly_chart(make_opacity_chart(bins_year, height=120), use_container_width=True)
-    peak_metrics(bins_year)
-    fig_index += 1
+
+_ = """
+Section 4: all hour-of-day and calendar plots
+"""
+st.markdown(
+    f"""
+    <div class="page-text">
+    Some routines belong to weekdays, others only appear at the weekend.
+    </div><br>
+    <div class="page-caption">
+    Figure 4.3: Hour x Day heatmap of plays per hour
+    </div><br>
+    """,
+    unsafe_allow_html=True,
+)
+
+DOW_ORDER = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+]
+
+heatmap_data = df.groupby(["dow", "hour"]).size().reset_index(name="plays")
+heatmap_pivot = (
+    heatmap_data.pivot(index="dow", columns="hour", values="plays")
+    .reindex(DOW_ORDER)
+    .fillna(0)
+)
+
+fig = px.imshow(
+    heatmap_pivot,
+    labels={"x": "Hour of day", "y": "", "color": "Plays"},
+    aspect="auto",
+    color_continuous_scale="Purples",
+)
+fig.update_layout(
+    coloraxis_showscale=False,
+    margin=dict(l=0, r=0, t=10, b=0),
+    plot_bgcolor="rgba(0,0,0,0)",
+    paper_bgcolor="rgba(0,0,0,0)",
+)
+st.plotly_chart(fig, use_container_width=True)
