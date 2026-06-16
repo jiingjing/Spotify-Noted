@@ -99,6 +99,30 @@ def apply_styles(bg_uri: str):
     line-height: 1.6; 
 }}
 
+.metric-label {{
+    font-family: "Baskervville", serif;
+    font-size: 1rem;
+    text-align: center;
+    color: #222;
+    letter-spacing: 0.08em;
+}}
+
+.metric-value {{
+    font-family: "Baskervville", serif;
+    font-size: 1rem;
+    text-align: center;
+    color: #222;
+    line-height: 1.6; 
+}}
+
+.plot-label {{
+    font-family: "Baskervville", serif;
+    font-size: 0.9rem;
+    text-align: left;
+    color: #666;
+    line-height: 1.6; 
+}}
+
 </style>
 """,
         unsafe_allow_html=True,
