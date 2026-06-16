@@ -56,7 +56,7 @@ st.markdown(
 
 
 _ = """
-Top picks
+Section 1: Top aristis by play frequency
 """
 st.markdown(
     f"""
@@ -98,10 +98,14 @@ fig.update_layout(height=max(300, top_n * 28))
 
 st.plotly_chart(fig, use_container_width=True)
 
+st.divider()
+
+_ = """
+Section 2: Top aristis by time played
+"""
 
 st.markdown(
     f"""
-    <br>
     <div class="page-text">
     Every press of the play button only took a second, but staying to listen took much longer. These are the artists who occupied the greatest share of my listening life.
     </div><br>
@@ -130,6 +134,46 @@ fig = px.bar(
     color_discrete_sequence=["#f7e297"],
 )
 fig.update_layout(height=max(300, top_n * 28))
+st.plotly_chart(fig, use_container_width=True)
+
+st.divider()
+
+_ = """
+Section 3: Treemap
+- Music Library Structure (Artist → Album → Track)
+"""
+st.markdown(
+    f"""
+    <div class="page-text">
+    The artists I return to are rarely represented by a single song. They come with eras built from albums and tracks.
+    </div><br>
+
+    <div class="page-caption">
+    Figure 1.3: Artist → Album → Track hierarchy for most-played artists
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+df_top_artists = df.copy()
+top_artists = df_top_artists["artist_name"].value_counts().head(top_n).index
+df_treemap = (
+    df[df["artist_name"].isin(top_artists)]
+    .groupby(["artist_name", "album_name", "track_id", "track_name"])
+    .agg(plays=("play_id", "count"))
+    .reset_index()
+)
+
+fig = px.treemap(
+    df_treemap,
+    path=["artist_name", "album_name", "track_name"],
+    values="plays",
+)
+fig.update_layout(
+    margin=dict(l=0, r=0, t=20, b=0),
+    plot_bgcolor="rgba(0,0,0,0)",
+    paper_bgcolor="rgba(0,0,0,0)",
+)
 st.plotly_chart(fig, use_container_width=True)
 
 # footer_nav(prev="1_toc.py", next="3_temp.py")
