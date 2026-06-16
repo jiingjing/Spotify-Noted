@@ -75,7 +75,7 @@ def apply_styles(bg_uri: str):
 
 .page-text {{
     font-family: "Baskervville", serif;
-    font-size: 1rem;
+    font-size: 1.5rem;
     text-align: left;
     color: #222;
     line-height: 1.6; 
@@ -88,6 +88,15 @@ def apply_styles(bg_uri: str):
 
 .page-text ul ul {{
     margin-left: 20px;
+}}
+
+.page-caption {{
+    font-family: "Baskervville", serif;
+    font-style: italic;
+    font-size: 1.0rem;
+    text-align: left;
+    color: #222;
+    line-height: 1.6; 
 }}
 
 </style>
