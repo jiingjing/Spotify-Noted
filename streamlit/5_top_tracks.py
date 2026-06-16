@@ -1,0 +1,102 @@
+_ = """
+5_top_tracks.py
+
+Now That's What I Call Music!
+Top Tracks
+"""
+
+import streamlit as st
+import base64, io
+from PIL import Image
+from utils import build_df, footer_nav, PERIOD_OPTIONS, filter_period
+from styles import apply_styles
+import plotly.express as px
+
+st.set_page_config(
+    page_title="Spotify Memoir | Chapter III",
+    page_icon="📓",
+    layout="centered",
+)
+
+
+# Encode texture image as base64 for CSS background (full resolution)
+img = Image.open("streamlit/white-paper-texture.png")
+buf = io.BytesIO()
+img.save(buf, format="JPEG", quality=85)
+b64 = base64.b64encode(buf.getvalue()).decode()
+bg_uri = f"data:image/jpeg;base64,{b64}"
+
+apply_styles(bg_uri)
+
+_ = """
+Data loading + merge
+"""
+df = build_df()
+n_tracks = df["track_name"].nunique()
+
+_ = """
+Page Contents
+"""
+
+st.markdown(
+    f"""
+    <div class="page-title">Chapter III</div>
+
+    <div class="page-subtitle">Now That's What I Call Music!</div>
+    
+    <div class="page-text">
+    If I could make a 'NOW That’s What I Call Music' compilation, I'd have {n_tracks:,} tracks to pick from. These are the songs I'd reach for first:
+    </div><br>
+    """,
+    unsafe_allow_html=True,
+)
+
+
+_ = """
+Top picks
+"""
+st.markdown(
+    f"""
+    <div class="page-caption">
+    Figure 3.1: Top Tracks
+    </div><br>
+    """,
+    unsafe_allow_html=True,
+)
+
+col1, col2 = st.columns([2, 1])
+with col1:
+    period = st.radio(
+        "Period", PERIOD_OPTIONS, horizontal=True, label_visibility="collapsed"
+    )
+with col2:
+    top_n = st.slider("Show top", min_value=5, max_value=50, value=10, step=5)
+
+df_period = filter_period(df, period)
+
+top_tracks = (
+    df_period.groupby("track_id")
+    .agg(
+        track_name=("track_name", "first"),
+        artist_name=("artist_name", "first"),
+        plays=("play_id", "count"),
+    )
+    .reset_index()
+    .sort_values("plays", ascending=False)
+    .head(top_n)
+)
+
+top_tracks["label"] = top_tracks["track_name"] + " · " + top_tracks["artist_name"]
+
+fig = px.bar(
+    top_tracks.sort_values("plays"),
+    x="plays",
+    y="label",
+    orientation="h",
+    labels={"plays": "Plays", "label": ""},
+    color_discrete_sequence=["#f79d97"],
+)
+fig.update_layout(height=max(300, top_n * 28))
+st.plotly_chart(fig, use_container_width=True)
+
+# footer_nav(prev="1_toc.py", next="3_temp.py")
