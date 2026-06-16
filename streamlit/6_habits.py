@@ -252,7 +252,7 @@ for year in years:
         f"""
     <div class="plot-label">
     {year}
-    </div><
+    </div>
     """,
         unsafe_allow_html=True,
     )

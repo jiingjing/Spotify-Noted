@@ -123,6 +123,14 @@ def apply_styles(bg_uri: str):
     line-height: 1.6; 
 }}
 
+.plot-text {{
+    font-family: "Baskervville", serif;
+    font-size: 1rem;
+    text-align: left;
+    color: #666;
+    line-height: 1.0; 
+}}
+
 </style>
 """,
         unsafe_allow_html=True,
