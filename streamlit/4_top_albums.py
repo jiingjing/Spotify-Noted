@@ -47,6 +47,9 @@ st.markdown(
     <div class="page-text">
     There are {n_albums:,} albums I have visited, but only some that feel like home. 
     </div><br>
+    <div class="page-text">
+    These are the albums I returned to most often, the places I couldn't resist revisiting.
+    </div><br>
     """,
     unsafe_allow_html=True,
 )
@@ -58,7 +61,7 @@ Top picks
 st.markdown(
     f"""
     <div class="page-caption">
-    Figure 2.1: Top Albums
+    Figure 2.1: Top Albums by Play Frequency
     </div><br>
     """,
     unsafe_allow_html=True,
@@ -90,6 +93,40 @@ fig = px.bar(
     orientation="h",
     labels={"plays": "Plays", "label": ""},
     color_discrete_sequence=["#f79d97"],
+)
+fig.update_layout(height=max(300, top_n * 28))
+st.plotly_chart(fig, use_container_width=True)
+
+st.markdown(
+    f"""
+    <br>
+    <div class="page-text">
+    Stopping by is one thing; settling in is another. These are the albums where I said yes to the house tour.
+    </div><br>
+
+    <div class="page-caption">
+    Figure 2.2: Top Albums by Hours Played
+    </div><br>
+    """,
+    unsafe_allow_html=True,
+)
+
+album_time = (
+    df_period.groupby(["album_name", "artist_name"])["ms_played"]
+    .sum()
+    .reset_index()
+    .assign(hours=lambda x: (x["ms_played"] / 3_600_000).round(1))
+    .sort_values("hours", ascending=False)
+    .head(top_n)
+)
+album_time["label"] = album_time["album_name"] + " · " + album_time["artist_name"]
+fig = px.bar(
+    album_time.sort_values("hours"),
+    x="hours",
+    y="label",
+    orientation="h",
+    labels={"hours": "Hours", "label": ""},
+    color_discrete_sequence=["#f7e297"],
 )
 fig.update_layout(height=max(300, top_n * 28))
 st.plotly_chart(fig, use_container_width=True)

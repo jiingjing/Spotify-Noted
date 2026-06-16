@@ -47,6 +47,9 @@ st.markdown(
     <div class="page-text">
     Over the years I have listened to {n_artists:,} different artists, yet there are some voices I keep going back to again and again.
     </div><br>
+    <div class="page-text">
+    These are the artists I reached for most often, the names that appear again and again throughout this memoir.
+    </div><br>
     """,
     unsafe_allow_html=True,
 )
@@ -58,7 +61,7 @@ Top picks
 st.markdown(
     f"""
     <div class="page-caption">
-    Figure 1.1: Top Artists
+    Figure 1.1: Top Artists by Play Frequency
     </div><br>
     """,
     unsafe_allow_html=True,
@@ -93,6 +96,40 @@ fig = px.bar(
 )
 fig.update_layout(height=max(300, top_n * 28))
 
+st.plotly_chart(fig, use_container_width=True)
+
+
+st.markdown(
+    f"""
+    <br>
+    <div class="page-text">
+    Every press of the play button only took a second, but staying to listen took much longer. These are the artists who occupied the greatest share of my listening life.
+    </div><br>
+
+    <div class="page-caption">
+    Figure 1.2: Top Artists by Hours Played
+    </div><br>
+    """,
+    unsafe_allow_html=True,
+)
+
+artist_time = (
+    df_period.groupby("artist_name")["ms_played"]
+    .sum()
+    .reset_index()
+    .assign(hours=lambda x: (x["ms_played"] / 3_600_000).round(1))
+    .sort_values("hours", ascending=False)
+    .head(top_n)
+)
+fig = px.bar(
+    artist_time.sort_values("hours"),
+    x="hours",
+    y="artist_name",
+    orientation="h",
+    labels={"hours": "Hours", "artist_name": ""},
+    color_discrete_sequence=["#f7e297"],
+)
+fig.update_layout(height=max(300, top_n * 28))
 st.plotly_chart(fig, use_container_width=True)
 
 # footer_nav(prev="1_toc.py", next="3_temp.py")

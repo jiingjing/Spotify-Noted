@@ -58,7 +58,7 @@ Top picks
 st.markdown(
     f"""
     <div class="page-caption">
-    Figure 3.1: Top Tracks
+    Figure 3.1: Top Tracks by Play Frequency
     </div><br>
     """,
     unsafe_allow_html=True,
@@ -95,6 +95,44 @@ fig = px.bar(
     orientation="h",
     labels={"plays": "Plays", "label": ""},
     color_discrete_sequence=["#f79d97"],
+)
+fig.update_layout(height=max(300, top_n * 28))
+st.plotly_chart(fig, use_container_width=True)
+
+st.markdown(
+    f"""
+    <br>
+    <div class="page-text">
+    Some songs only got a single spin, but these tracks stayed on repeat.
+    </div><br>
+
+    <div class="page-caption">
+    Figure 3.2: Top Tracks by Hours Played
+    </div><br>
+    """,
+    unsafe_allow_html=True,
+)
+
+track_time = (
+    df_period.groupby("track_id")["ms_played"]
+    .sum()
+    .reset_index()
+    .merge(
+        df_period[["track_id", "track_name", "artist_name"]].drop_duplicates(),
+        on="track_id",
+    )
+    .assign(hours=lambda x: (x["ms_played"] / 3_600_000).round(1))
+    .sort_values("hours", ascending=False)
+    .head(top_n)
+)
+track_time["label"] = track_time["track_name"] + " · " + track_time["artist_name"]
+fig = px.bar(
+    track_time.sort_values("hours"),
+    x="hours",
+    y="label",
+    orientation="h",
+    labels={"hours": "Hours", "label": ""},
+    color_discrete_sequence=["#f7e297"],
 )
 fig.update_layout(height=max(300, top_n * 28))
 st.plotly_chart(fig, use_container_width=True)
