@@ -1,7 +1,7 @@
 _ = """
-2_prologue.py
+9_appendix.py
 
-Prologue - overview
+Appendix
 """
 
 import streamlit as st
@@ -13,6 +13,7 @@ from PIL import Image
 from utils import build_df, footer_nav, PERIOD_OPTIONS, filter_period
 from styles import apply_styles
 import pandas as pd
+import numpy as np
 
 st.set_page_config(
     page_title="Spotify Memoir | Appendix",

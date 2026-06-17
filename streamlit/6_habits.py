@@ -267,7 +267,7 @@ st.markdown(
     Some routines belong to weekdays, others only appear at the weekend.
     </div><br>
     <div class="page-caption">
-    Figure 4.3: Hour x Day heatmap of plays per hour
+    Figure 4.3: Hour × Day heatmap of plays per hour
     </div><br>
     """,
     unsafe_allow_html=True,
