@@ -2,6 +2,19 @@ _ = """
 1_toc.py
 
 Table of contents
+
+| Dashboard         | Memoir                       | Content                                                                                                |
+| ----------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Overview          | Prologue                     | n days/songs/albums/artists/hours, first/last song + datetime, avg mins a day                          |
+| Top Artists       | People I Kept Returning To   | bar chart top n artists by plays/time of PERIOD_OPTIONS, treemap artist → album → track                |
+| Top Albums        | Places I Called Home         | bar chart top n albums by plays/time of PERIOD_OPTIONS                                                 |
+| Most Played Songs | Now That's What I Call Music | bar chart top n tracks by plays/time of PERIOD_OPTIONS, bar chart greatest revisits by days            |
+| Listening Habits  | Daily Rituals                | play count 5min intervals in 24h all-time/year-on-year, hour×day-of-week heatmap of plays per hour     |
+| Timeline          | The Years That Changed Me    | bar chart of freq of plays per year, bar chart of freq/cumfreq new tracks per month,                   |
+|                   |                              | most played tracks discovered in selected month, donut chart top artists in selected year, on this day |
+| Summary           | Epilogue                     | n tracks/albums/artists/days/hours/plays                                                               |
+| Statistics        | Appendix                     |
+
 """
 
 import streamlit as st
