@@ -30,6 +30,16 @@ def load_data():
     return tracks, history
 
 
+@st.cache_data
+def load_display_name():
+    conn = st.connection("mysql", type="sql")
+    display_name = conn.query(
+        "SELECT name FROM display_name;",
+        ttl=0,
+    )
+    return display_name.iloc[0]["name"]
+
+
 _ = """
 Merge data
 - merge tracks_metadata and listening_history to one dataframe df

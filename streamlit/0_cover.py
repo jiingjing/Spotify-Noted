@@ -7,7 +7,7 @@ Memoir-style cover page for the Spotify Noted app.
 import streamlit as st
 import base64, io
 from PIL import Image
-from utils import build_df, footer_nav
+from utils import build_df, footer_nav, load_display_name
 from styles import apply_styles
 
 st.set_page_config(
@@ -45,7 +45,7 @@ st.markdown(
     </div>
 
     <div class="cover-byline">
-        by Jane Doe
+        by {load_display_name()}
     </div>
 
     <div class="cover-dates">
