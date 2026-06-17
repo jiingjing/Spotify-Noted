@@ -45,7 +45,7 @@ st.markdown(
     <div class="page-subtitle">Now That's What I Call Music!</div>
     
     <div class="page-text">
-    If I could make a 'NOW That’s What I Call Music' compilation, I'd have {n_tracks:,} tracks to pick from. These are the songs I'd reach for first:
+    If I could make a 'NOW That’s What I Call Music' compilation, I'd have {n_tracks:,} tracks to pick from. These are the songs I'd reach for first.
     </div><br>
     """,
     unsafe_allow_html=True,
@@ -96,7 +96,12 @@ fig = px.bar(
     labels={"plays": "Plays", "label": ""},
     color_discrete_sequence=["#f79d97"],
 )
-fig.update_layout(height=max(300, top_n * 28))
+fig.update_layout(
+    height=max(300, top_n * 28),
+    margin=dict(l=0, r=0, t=10, b=0),
+    plot_bgcolor="rgba(0,0,0,0)",
+    paper_bgcolor="rgba(0,0,0,0)",
+)
 st.plotly_chart(fig, use_container_width=True)
 
 st.divider()
@@ -140,7 +145,12 @@ fig = px.bar(
     labels={"hours": "Hours", "label": ""},
     color_discrete_sequence=["#f7e297"],
 )
-fig.update_layout(height=max(300, top_n * 28))
+fig.update_layout(
+    height=max(300, top_n * 28),
+    margin=dict(l=0, r=0, t=10, b=0),
+    plot_bgcolor="rgba(0,0,0,0)",
+    paper_bgcolor="rgba(0,0,0,0)",
+)
 st.plotly_chart(fig, use_container_width=True)
 
 st.divider()
@@ -187,7 +197,12 @@ fig = px.bar(
     hover_data={"total_plays": True},
     color_discrete_sequence=["#7F77DD"],
 )
-fig.update_layout(height=max(300, top_n * 28))
+fig.update_layout(
+    height=max(300, top_n * 28),
+    margin=dict(l=0, r=0, t=10, b=0),
+    plot_bgcolor="rgba(0,0,0,0)",
+    paper_bgcolor="rgba(0,0,0,0)",
+)
 st.plotly_chart(fig, use_container_width=True)
 
 # footer_nav(prev="1_toc.py", next="3_temp.py")

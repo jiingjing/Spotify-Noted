@@ -56,7 +56,7 @@ st.markdown(
 
 
 _ = """
-Top picks
+Section 1: Top albums by play frequency
 """
 st.markdown(
     f"""
@@ -94,8 +94,19 @@ fig = px.bar(
     labels={"plays": "Plays", "label": ""},
     color_discrete_sequence=["#f79d97"],
 )
-fig.update_layout(height=max(300, top_n * 28))
+fig.update_layout(
+    height=max(300, top_n * 28),
+    margin=dict(l=0, r=0, t=10, b=0),
+    plot_bgcolor="rgba(0,0,0,0)",
+    paper_bgcolor="rgba(0,0,0,0)",
+)
 st.plotly_chart(fig, use_container_width=True)
+
+st.divider()
+
+_ = """
+Section 2: Top albums by time played
+"""
 
 st.markdown(
     f"""
@@ -128,7 +139,12 @@ fig = px.bar(
     labels={"hours": "Hours", "label": ""},
     color_discrete_sequence=["#f7e297"],
 )
-fig.update_layout(height=max(300, top_n * 28))
+fig.update_layout(
+    height=max(300, top_n * 28),
+    margin=dict(l=0, r=0, t=10, b=0),
+    plot_bgcolor="rgba(0,0,0,0)",
+    paper_bgcolor="rgba(0,0,0,0)",
+)
 st.plotly_chart(fig, use_container_width=True)
 
 # footer_nav(prev="1_toc.py", next="3_temp.py")
