@@ -34,7 +34,20 @@ _ = """
 Data loading + merge
 """
 df = build_df()
-pct_days_listened = 86  # todo: get % of days listened to music for out of total span of days in spotify history
+
+# % of days listened to music for out of total span of days in spotify history
+# first and last listening dates
+start_date = df["time_stamp"].dt.date.min()
+end_date = df["time_stamp"].dt.date.max()
+
+# total number of days in Spotify history (inclusive)
+total_days = (end_date - start_date).days + 1
+
+# number of unique days with at least one play
+listening_days = df["time_stamp"].dt.date.nunique()
+
+# % of days with listening activity
+pct_days_listened = round(100 * listening_days / total_days, 1)
 
 _ = """
 Section 1: Page Contents
