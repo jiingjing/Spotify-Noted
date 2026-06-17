@@ -97,25 +97,70 @@ _ = """
 Footer navigation
 """
 
+PAGES = [
+    "0_cover.py",
+    "1_toc.py",
+    "2_prologue.py",
+    "3_top_artists.py",
+    "4_top_albums.py",
+    "5_top_tracks.py",
+    "6_habits.py",
+    "7_timeline.py",
+    "8_epilogue.py",
+    "9_appendix.py",
+]
 
-def footer_nav(prev=None, next=None, toc="1_toc.py"):
+
+def footer_nav(current):
+    if current not in PAGES:
+        return
+
+    idx = PAGES.index(current)
+
+    prev_page = PAGES[idx - 1] if idx > 0 else None
+    next_page = PAGES[idx + 1] if idx < len(PAGES) - 1 else None
+    toc_page = "1_toc.py"
+
     st.markdown("<hr style='margin-top:3rem;'>", unsafe_allow_html=True)
 
-    col1, col2, col3 = st.columns([1, 1, 1])
+    if prev_page is None:
+        col1, col2 = st.columns([1, 1])
 
-    with col1:
-        if prev:
+        with col1:
+            if st.button("Table of Contents", use_container_width=True):
+                st.switch_page(toc_page)
+
+        with col2:
+            if next_page:
+                if st.button("Next →", use_container_width=True):
+                    st.switch_page(next_page)
+
+    elif next_page is None:
+        col1, col2 = st.columns([1, 1])
+
+        with col1:
+            if prev_page:
+                if st.button("← Previous", use_container_width=True):
+                    st.switch_page(prev_page)
+
+        with col2:
+            if st.button("Table of Contents", use_container_width=True):
+                st.switch_page(toc_page)
+
+    else:
+        col1, col2, col3 = st.columns([1, 1, 1])
+
+        with col1:
             if st.button("← Previous", use_container_width=True):
-                st.switch_page(prev)
+                st.switch_page(prev_page)
 
-    with col2:
-        if st.button("Table of Contents", use_container_width=True):
-            st.switch_page(toc)
+        with col2:
+            if st.button("Table of Contents", use_container_width=True):
+                st.switch_page(toc_page)
 
-    with col3:
-        if next:
+        with col3:
             if st.button("Next →", use_container_width=True):
-                st.switch_page(next)
+                st.switch_page(next_page)
 
 
 _ = """

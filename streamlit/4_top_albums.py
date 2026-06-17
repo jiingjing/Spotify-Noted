@@ -147,4 +147,4 @@ fig.update_layout(
 )
 st.plotly_chart(fig, use_container_width=True)
 
-# footer_nav(prev="1_toc.py", next="3_temp.py")
+footer_nav("4_top_albums.py")

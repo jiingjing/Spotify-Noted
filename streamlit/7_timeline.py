@@ -42,9 +42,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-
-# footer_nav(prev="1_toc.py", next="3_temp.py")
-
 df = build_df()
 
 _ = """
@@ -371,3 +368,5 @@ else:
                     </div><br>""",
                     unsafe_allow_html=True,
                 )
+
+footer_nav("7_timeline.py")

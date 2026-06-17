@@ -718,9 +718,11 @@ st.markdown(
     {hours_day} hours on {format_full_date(day_date)}<br><br>
 
     Most hours of music listened to in one week:<br>
-    {hours_week} hours on w/c {format_full_date(week_commencing)}<br><br>
+    {hours_week} hours on w/c {format_full_date(week_commencing)}<br>
 
     </div>
     """,
     unsafe_allow_html=True,
 )
+
+footer_nav("9_appendix.py")

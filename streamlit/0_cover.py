@@ -54,3 +54,5 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
+footer_nav("0_cover.py")

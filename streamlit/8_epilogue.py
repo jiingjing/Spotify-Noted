@@ -62,4 +62,4 @@ st.markdown(
 )
 
 
-# footer_nav(prev="1_toc.py", next="3_temp.py")
+footer_nav("8_epilogue.py")
