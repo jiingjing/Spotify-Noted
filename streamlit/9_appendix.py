@@ -17,10 +17,14 @@ C. Distribution of Listening
 - Ridgeline plot of top n artists' plays over all-time with month intervals
 - Line plot of top n artists ' plays over all-time with month intervals with a slider for months shown
 
-D. Notes & Additional Figures
+D. Streaming Behavior
 
 - shuffle vs non-shuffle
 - skipped vs non-skipped
+- reason for start/end track
+
+E. Notes & Additional Figures
+
 - most songs played in a day
 - fun facts
 """
@@ -31,7 +35,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 from PIL import Image
-from utils import build_df, footer_nav, PERIOD_OPTIONS, filter_period
+from utils import build_df, footer_nav, PERIOD_OPTIONS, filter_period, format_full_date
 from styles import apply_styles
 import pandas as pd
 import numpy as np
@@ -54,6 +58,16 @@ apply_styles(bg_uri)
 
 df = build_df()
 
+st.markdown(
+    """
+    <div class="page-title">Appendix</div>
+    """,
+    unsafe_allow_html=True,
+)
+
+
+st.divider()
+
 _ = """
 Appendix A
 - Complete Listening History Catalogue
@@ -64,12 +78,15 @@ Appendix A
 
 st.markdown(
     """
-    <div class="page-title">Appendix</div>
+    <br><div class="page-subtitle">Appendix A: Complete Listening History Catalogue</div>
 
-    <div class="page-subtitle">Appendix A: Complete Listening History Catalogue</div>
+    <div class="page-caption">
+    Figure A.1: Table of complete Spotify listening history
+    </div><br>
     """,
     unsafe_allow_html=True,
 )
+
 
 # st.caption("When you first listened to a track, and how many times since.")
 
@@ -120,7 +137,11 @@ Appendix B
 
 st.markdown(
     """
-    <div class="page-subtitle">Appendix B: Complete Listening Calendar</div>
+    <br><div class="page-subtitle">Appendix B: Complete Listening Calendar</div>
+    
+    <div class="page-caption">
+    Figure B.1: Heatmap of Spotify listening calendar (by tracks played)
+    </div><br>
     """,
     unsafe_allow_html=True,
 )
@@ -236,7 +257,11 @@ Distribution of Listening
 
 st.markdown(
     """
-    <div class="page-subtitle">Appendix C: Distribution of Listening</div>
+    <br><div class="page-subtitle">Appendix C: Distribution of Listening</div>
+    
+    <div class="page-caption">
+    Figure C.1: All-time track plays by selected granularity
+    </div><br>
     """,
     unsafe_allow_html=True,
 )
@@ -244,10 +269,9 @@ st.markdown(
 # Section C.1: Plays over all-time with month intervals
 
 granularity = st.radio(
-    "Granularity",
+    "Granularity (Figure C.1)",
     ["Daily", "Weekly", "Monthly", "Yearly"],
     horizontal=True,
-    label_visibility="collapsed",
 )
 
 freq_map = {"Daily": "D", "Weekly": "W", "Monthly": "ME", "Yearly": "YE"}
@@ -275,7 +299,16 @@ st.plotly_chart(fig, use_container_width=True)
 
 # Section C.2: Ridgeline plot of top n artists' plays over all-time with month intervals
 
-top_n = st.slider("Show top (Figure C.2)", min_value=5, max_value=50, value=10, step=5)
+st.markdown(
+    """
+    <br><div class="page-caption">
+    Figure C.2: Ridgeline plot of all-time top artists played
+    </div><br>
+    """,
+    unsafe_allow_html=True,
+)
+
+top_n = st.slider("Show top (Figure C.2)", min_value=5, max_value=50, value=15, step=5)
 
 df_top_artists = df.copy()
 top_artists = df_top_artists["artist_name"].value_counts().head(top_n).index
@@ -351,6 +384,15 @@ st.plotly_chart(fig, use_container_width=True)
 
 # Section C.3: Line plot of top n artists ' plays over all-time with month intervals with a slider for months shown
 
+st.markdown(
+    """
+    <br><div class="page-caption">
+    Figure C.3: Line plot of all-time top artists' monthly play frequency 
+    </div><br>
+    """,
+    unsafe_allow_html=True,
+)
+
 df["month"] = df["time_stamp"].dt.to_period("M").astype(str)
 
 col1, col2 = st.columns([2, 1])
@@ -404,19 +446,26 @@ Streaming Behavior
 
 st.markdown(
     """
-    <div class="page-subtitle">Appendix D: Streaming Behavior </div>
+    <br><div class="page-subtitle">Appendix D: Streaming Behavior </div>
     """,
     unsafe_allow_html=True,
 )
 
-period = st.radio(
-    "Period", PERIOD_OPTIONS, horizontal=True, label_visibility="collapsed"
+# Section D.1 - Overview metrics
+
+st.markdown(
+    """
+    <br><div class="page-caption">
+    Figure D.1: Overview of shuffle and skipped tracks
+    </div><br>
+    """,
+    unsafe_allow_html=True,
 )
+
+period = st.radio("Period (Figure D.1)", PERIOD_OPTIONS, horizontal=True)
 df_period = filter_period(df, period)
 
 # Overview metrics
-st.subheader("Overview")
-
 total = len(df_period)
 skipped = df_period["skipped"].sum()
 shuffle = df_period["shuffle"].sum()
@@ -431,7 +480,6 @@ col3.metric("Skip rate", f"{skip_rate}%")
 col4.metric("Shuffled", f"{int(shuffle):,}")
 col5.metric("Shuffle rate", f"{shuffle_rate}%")
 
-st.divider()
 
 # Contingency table
 df_period["skipped_cat"] = np.where(df_period["skipped"] == 1, "Skipped", "Not skipped")
@@ -472,58 +520,16 @@ combined.loc["Total"] = (
 # display: skip vs shuffle behavior matrix
 st.dataframe(combined, use_container_width=True)
 
+# Section D.2 - skip + shuffle rate over time
 
-# reason_end breakdown
-st.subheader("How plays end")
-
-reason_end = (
-    df_period.groupby("reason_end")
-    .size()
-    .reset_index(name="count")
-    .sort_values("count", ascending=False)
+st.markdown(
+    """
+    <br><div class="page-caption">
+    Figure D.2: Tracl shuffle and skip rates over time
+    </div><br>
+    """,
+    unsafe_allow_html=True,
 )
-fig = px.pie(reason_end, names="reason_end", values="count", hole=0.4)
-fig.update_traces(
-    texttemplate="%{label} • %{percent}",
-    sort=False,
-)
-fig.update_layout(
-    showlegend=False,
-    margin=dict(l=20, r=20, t=20, b=150),
-    paper_bgcolor="rgba(0,0,0,0)",
-    plot_bgcolor="rgba(0,0,0,0)",
-)
-st.plotly_chart(fig, use_container_width=True)
-
-st.divider()
-
-# reason_start breakdown
-st.subheader("How plays start")
-
-reason_start = (
-    df_period.groupby("reason_start")
-    .size()
-    .reset_index(name="count")
-    .sort_values("count", ascending=False)
-)
-fig = px.pie(reason_start, names="reason_start", values="count", hole=0.4)
-fig.update_traces(
-    texttemplate="%{label} • %{percent}",
-    sort=False,
-)
-fig.update_layout(
-    showlegend=False,
-    margin=dict(l=20, r=20, t=20, b=150),
-    paper_bgcolor="rgba(0,0,0,0)",
-    plot_bgcolor="rgba(0,0,0,0)",
-)
-st.plotly_chart(fig, use_container_width=True)
-
-st.divider()
-
-
-# skip + shuffle rate over time
-st.subheader("Skip and shuffle rate over time")
 
 skip_over_time = (
     df.set_index("time_stamp")
@@ -574,6 +580,77 @@ fig.update_layout(
 
 st.plotly_chart(fig, use_container_width=True)
 
+
+# Section D.3
+
+st.markdown(
+    """
+    <br><div class="page-caption">
+    Figure D.3: Donut charts of reasons for tracks ending and starting
+    </div><br>
+    """,
+    unsafe_allow_html=True,
+)
+
+period = st.radio("Period (Figure D.3)", PERIOD_OPTIONS, horizontal=True)
+df_period = filter_period(df, period)
+
+# reason_end breakdown
+st.markdown(
+    """
+    <br><div class="plot-text">
+    Reasons for ending
+    </div><br>
+    """,
+    unsafe_allow_html=True,
+)
+reason_end = (
+    df_period.groupby("reason_end")
+    .size()
+    .reset_index(name="count")
+    .sort_values("count", ascending=False)
+)
+fig = px.pie(reason_end, names="reason_end", values="count", hole=0.4)
+fig.update_traces(
+    texttemplate="%{label} • %{percent}",
+    sort=False,
+)
+fig.update_layout(
+    showlegend=False,
+    margin=dict(l=0, r=0, t=0, b=150),
+    paper_bgcolor="rgba(0,0,0,0)",
+    plot_bgcolor="rgba(0,0,0,0)",
+)
+st.plotly_chart(fig, use_container_width=True)
+
+# reason_start breakdown
+st.markdown(
+    """
+    <br><div class="plot-text">
+    Reasons for starting
+    </div><br>
+    """,
+    unsafe_allow_html=True,
+)
+reason_start = (
+    df_period.groupby("reason_start")
+    .size()
+    .reset_index(name="count")
+    .sort_values("count", ascending=False)
+)
+fig = px.pie(reason_start, names="reason_start", values="count", hole=0.4)
+fig.update_traces(
+    texttemplate="%{label} • %{percent}",
+    sort=False,
+)
+fig.update_layout(
+    showlegend=False,
+    margin=dict(l=0, r=0, t=0, b=150),
+    paper_bgcolor="rgba(0,0,0,0)",
+    plot_bgcolor="rgba(0,0,0,0)",
+)
+st.plotly_chart(fig, use_container_width=True)
+
 st.divider()
 
 _ = """
@@ -583,9 +660,67 @@ Notes & Additional Figures
 - fun facts
 """
 
+# day with most plays
+most_tracks_day = (
+    df.assign(date=df["time_stamp"].dt.date)
+    .groupby("date")
+    .size()
+    .reset_index(name="plays")
+    .sort_values("plays", ascending=False)
+    .iloc[0]
+)
+
+# most hours listened to in one week
+weekly_hours = (
+    df.set_index("time_stamp")
+    .resample(
+        "W-MON",  # weekly periods starting Monday
+        label="left",  # label with the start of the week
+        closed="left",  # Monday inclusive, next Monday exclusive
+    )["ms_played"]
+    .sum()
+    .div(1000 * 60 * 60)  # convert milliseconds to hours
+    .reset_index(name="hours")
+    .rename(columns={"time_stamp": "week_commencing"})
+)
+
+# find the week with max hours
+most_hours_week = weekly_hours.sort_values("hours", ascending=False).iloc[0]
+
+week_commencing = most_hours_week["week_commencing"]
+hours_week = round(most_hours_week["hours"], 1)
+
+# most hours listened to in one day
+daily_hours = (
+    df.set_index("time_stamp")
+    .resample("D")["ms_played"]
+    .sum()
+    .div(1000 * 60 * 60)  # convert milliseconds to hours
+    .reset_index(name="hours")
+    .rename(columns={"time_stamp": "date"})
+)
+
+# find the day with max hours
+most_hours_day = daily_hours.sort_values("hours", ascending=False).iloc[0]
+
+day_date = most_hours_day["date"]
+hours_day = round(most_hours_day["hours"], 1)
+
 st.markdown(
-    """
-    <div class="page-subtitle">Appendix E: Notes & Additional Figures</div>
+    f"""
+    <br><div class="page-subtitle">Appendix E: Notes</div>
+
+    <div class="page-text">
+    Most tracks played in one day:<br> 
+    {most_tracks_day.get('plays')} tracks on {format_full_date(most_tracks_day.get('date'))}<br><br>
+
+    Most hours of music listened to in one day:<br> 
+    {hours_day} hours on {format_full_date(day_date)}<br><br>
+
+    Most hours of music listened to in one week:<br>
+    {hours_week} hours on w/c {format_full_date(week_commencing)}<br><br>
+
+    </div>
     """,
     unsafe_allow_html=True,
 )

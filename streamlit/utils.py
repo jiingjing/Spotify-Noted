@@ -137,3 +137,12 @@ def format_full_time(ts):
     time = ts.strftime("%I:%M%p").lstrip("0").lower()
 
     return f"{day_name} {day} {month} {year} at {time}"
+
+
+def format_full_date(ts):
+    day_name = ts.strftime("%A")
+    day = ordinal(ts.day)
+    month = ts.strftime("%B")
+    year = ts.year
+
+    return f"{day_name} {day} {month} {year}"
