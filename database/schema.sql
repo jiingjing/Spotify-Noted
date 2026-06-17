@@ -72,3 +72,8 @@ CREATE TABLE tracks_audio_features (
 
     FOREIGN KEY (track_id) REFERENCES tracks_metadata(track_id)
 );
+
+-- Single ROW for display_name
+CREATE TABLE display_name (
+    name VARCHAR(255)
+);

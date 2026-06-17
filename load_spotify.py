@@ -33,6 +33,7 @@ DB_CONFIG = {
 
 HISTORY_JSON_GLOB = config["HISTORY_JSON_GLOB"]
 LIBRARY_JSON = config["LIBRARY_JSON"]
+IDENTITY_JSON = config["IDENTITY_JSON"]
 LOG_DIR = config["LOG_DIR"]
 REPORT_PATH = os.path.join(LOG_DIR, "import_report.txt")
 
@@ -61,6 +62,9 @@ print(f"Loaded {len(all_events)} total audio events")
 
 with open(LIBRARY_JSON, encoding="utf-8") as f:
     library_data = json.load(f)
+
+with open(IDENTITY_JSON, encoding="utf-8") as f:
+    identity_data = json.load(f)
 
 # Filter history to tracks only
 # drops podcasts, audiobooks, local files (no spotify_track_uri or track name)
@@ -217,6 +221,19 @@ for e in tracks:
             bool(e["skipped"]),
         ),
     )
+
+# 4. display name
+insert_display_name = """
+    INSERT INTO display_name
+        (name)
+    VALUES (%s)
+"""
+
+display_name = identity_data["displayName"]
+cursor.execute(
+    insert_display_name,
+    [display_name],
+)
 
 # Commit & close
 
