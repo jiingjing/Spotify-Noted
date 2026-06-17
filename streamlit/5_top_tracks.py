@@ -53,7 +53,7 @@ st.markdown(
 
 
 _ = """
-Top picks
+Section 1: Top tracks by play frequency
 """
 st.markdown(
     f"""
@@ -99,6 +99,12 @@ fig = px.bar(
 fig.update_layout(height=max(300, top_n * 28))
 st.plotly_chart(fig, use_container_width=True)
 
+st.divider()
+
+_ = """
+Section 2: Top tracks by time played
+"""
+
 st.markdown(
     f"""
     <br>
@@ -133,6 +139,53 @@ fig = px.bar(
     orientation="h",
     labels={"hours": "Hours", "label": ""},
     color_discrete_sequence=["#f7e297"],
+)
+fig.update_layout(height=max(300, top_n * 28))
+st.plotly_chart(fig, use_container_width=True)
+
+st.divider()
+
+_ = """
+Section 3: Most returned to tracks 
+- Tracks played across the most separate days (measure of loyalty over time)
+"""
+
+st.markdown(
+    f"""
+    <div class="page-text">
+    Many songs are just a fad, these are the ones that I have been loyal to.
+    </div><br>
+
+    <div class="page-caption">
+    Figure 3.3: Tracks revisited across the greatest number of days
+    </div><br>
+    """,
+    unsafe_allow_html=True,
+)
+
+
+returned_to = (
+    df_period.groupby("track_id")
+    .agg(
+        track_name=("track_name", "first"),
+        artist_name=("artist_name", "first"),
+        total_plays=("play_id", "count"),
+        days_played=("time_stamp", lambda x: x.dt.date.nunique()),
+    )
+    .reset_index()
+    .sort_values("days_played", ascending=False)
+    .head(top_n)
+)
+returned_to["label"] = returned_to["track_name"] + " · " + returned_to["artist_name"]
+
+fig = px.bar(
+    returned_to.sort_values("days_played"),
+    x="days_played",
+    y="label",
+    orientation="h",
+    labels={"days_played": "Days played", "label": ""},
+    hover_data={"total_plays": True},
+    color_discrete_sequence=["#7F77DD"],
 )
 fig.update_layout(height=max(300, top_n * 28))
 st.plotly_chart(fig, use_container_width=True)

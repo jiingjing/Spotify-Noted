@@ -56,7 +56,7 @@ st.markdown(
 
 
 _ = """
-Section 1: Top aristis by play frequency
+Section 1: Top artists by play frequency
 """
 st.markdown(
     f"""
@@ -101,7 +101,7 @@ st.plotly_chart(fig, use_container_width=True)
 st.divider()
 
 _ = """
-Section 2: Top aristis by time played
+Section 2: Top aritists by time played
 """
 
 st.markdown(
