@@ -42,32 +42,19 @@ apply_styles(bg_uri)
 st.markdown(
     """
     <div class="page-title">Table of Contents</div>
-
-    <div class="page-subtitle">Table of Contents</div>
-    
-    <div class="page-text">
-
-    <ul>
-    <li><strong>Prologue</strong></li>
-
-    <li><strong>Chapters</strong>
-    <ul>
-    <li>I. People I kept returning to</li>
-    <li>II. Places I called home</li>
-    <li>III. Now that's what I call music</li>
-    <li>IV. Daily rituals</li>
-    <li>V. The years that changed me</li>
-    </ul>
-    </li>
-
-    <li><strong>Epilogue</strong></li>
-    <li><strong>Appendix</strong></li>
-
-    </ul>
-
-    </div>
     """,
     unsafe_allow_html=True,
 )
+
+st.markdown('<div class="page-text">', unsafe_allow_html=True)
+st.page_link("2_prologue.py", label="Prologue")
+st.page_link("3_top_artists.py", label="Chapter I. People I kept returning to")
+st.page_link("4_top_albums.py", label="Chapter II. Places I called home")
+st.page_link("5_top_tracks.py", label="Chapter III. Now that's what I call music")
+st.page_link("6_habits.py", label="Chapter IV. Daily rituals")
+st.page_link("7_timeline.py", label="Chapter V. The years that changed me")
+st.page_link("8_epilogue.py", label="Epilogue")
+st.page_link("9_appendix.py", label="Appendix")
+st.markdown("</div>", unsafe_allow_html=True)
 
 footer_nav("1_toc.py")

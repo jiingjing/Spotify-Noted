@@ -85,13 +85,41 @@ header[data-testid="stHeader"] {{
     line-height: 1.6; 
 }}
 
-.page-text ul {{
-    list-style: none;
-    padding-left: 0;
+[data-testid="stPageLink"] {{
+    font-family: "Baskervville", serif !important;
+    font-size: 1.5rem !important;
 }}
 
-.page-text ul ul {{
-    margin-left: 20px;
+[data-testid="stPageLink"] p {{
+    font-family: "Baskervville", serif !important;
+    font-size: 1.5rem !important;
+    color: #222 !important;
+}}
+
+[data-testid="stPageLink"] a {{
+    text-decoration: none !important;
+    color: #222 !important;
+}}
+
+[data-testid="stPageLink"]:hover a {{
+    text-decoration: underline !important;
+}}
+.page-text [data-testid="stPageLink"] a {{
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+    text-decoration: none;
+}}
+
+.page-text [data-testid="stPageLink"] a:hover {{
+    text-decoration: underline;
+}}
+
+.page-text [data-testid="stPageLink"] p {{
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+    margin: 0;
 }}
 
 .page-caption {{
