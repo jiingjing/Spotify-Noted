@@ -7,8 +7,12 @@ def apply_styles(bg_uri: str):
 <link href="https://fonts.googleapis.com/css2?family=Baskervville:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
 
 <style>
-#MainMenu, header, footer {{
+#MainMenu, footer {{
     visibility: hidden;
+}}
+
+header[data-testid="stHeader"] {{
+    background-color: #f0f2f6 !important;
 }}
 
 [data-testid="stAppViewContainer"] {{
