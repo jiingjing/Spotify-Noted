@@ -612,12 +612,14 @@ reason_end = (
 )
 fig = px.pie(reason_end, names="reason_end", values="count", hole=0.4)
 fig.update_traces(
-    texttemplate="%{label} • %{percent}",
+    texttemplate="%{label}",
     sort=False,
+    textposition="inside",
+    hovertemplate="%{label}<br>%{value} plays (%{percent})<extra></extra>",
 )
 fig.update_layout(
     showlegend=False,
-    margin=dict(l=0, r=0, t=0, b=150),
+    margin=dict(l=0, r=0, t=0, b=0),
     paper_bgcolor="rgba(0,0,0,0)",
     plot_bgcolor="rgba(0,0,0,0)",
 )
@@ -640,12 +642,14 @@ reason_start = (
 )
 fig = px.pie(reason_start, names="reason_start", values="count", hole=0.4)
 fig.update_traces(
-    texttemplate="%{label} • %{percent}",
+    texttemplate="%{label}",
     sort=False,
+    textposition="inside",
+    hovertemplate="%{label}<br>%{value} plays (%{percent})<extra></extra>",
 )
 fig.update_layout(
     showlegend=False,
-    margin=dict(l=0, r=0, t=0, b=150),
+    margin=dict(l=0, r=0, t=0, b=0),
     paper_bgcolor="rgba(0,0,0,0)",
     plot_bgcolor="rgba(0,0,0,0)",
 )
